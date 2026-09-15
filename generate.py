@@ -1,4 +1,5 @@
-import ollama
+from google import genai
+import os
 
 
 def generate_flashcards(chunk):
@@ -6,12 +7,14 @@ def generate_flashcards(chunk):
     if not chunk or not chunk.strip():
         return ""
 
+    client = genai.Client(
+        api_key=os.environ.get("GEMINI_API_KEY")
+    )
+
     prompt = f"""
 You are an expert AI study assistant.
 
 Read the study material below and create high-quality flashcards.
-
-Your job is to understand the material, not simply copy sentences.
 
 Rules:
 1. Create 3 to 5 flashcards.
@@ -43,14 +46,9 @@ Study material:
 {chunk}
 """
 
-    response = ollama.chat(
-        model="llama3.2:3b",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
     )
 
-    return response["message"]["content"]
+    return response.text
